@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Music quiz </title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+     {% load static %}
+    <link rel='stylesheet' type='text/css' media='screen' href='{% static "css/style.css" %}'>
+    <script src='{% static "js/login.js" %}'></script>
+</head>
+
+<body>
+    <form action="/login" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit">
+    </form>
+    <a href='/register'><button>Sign up</button></a>
+</body>
+
+</html>

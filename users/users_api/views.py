@@ -9,9 +9,11 @@ from .models import User
 
 class UserViewSet(viewsets.ViewSet):
     def create(self, request):
+        print(request.data)
         serializer = UserPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        print("success")
         return Response(status=status.HTTP_201_CREATED)
 
     def authenticateGetId(self, request):

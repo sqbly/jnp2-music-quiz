@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Music quiz </title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+     {% load static %}
+    <link rel='stylesheet' type='text/css' media='screen' href='{% static "css/style.css" %}'>
+    <script src='{% static "js/register.js" %}'></script>
+</head>
+
+<body>
+
+    {% if failed %}
+        Failed to register, try again.
+    {% endif %} 
+
+    <form action="/register" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit">
+    </form>
+    <a href='/login'><button>Go back</button></a>
+</body>
+
+</html>
