@@ -27,11 +27,17 @@ urlpatterns = [
     path('lobby/<str:nr>', GameViewSet.as_view({
         'get': 'lobbyPage'
     })),
+    path('lobby/<str:nr>/join', GameViewSet.as_view({
+        'get': 'joinLobby'
+    })),
+    path('lobby/<str:nr>/start', GameViewSet.as_view({
+        'post': 'startLobby'
+    })),
     path('lobby/<str:nr>/answer', GameViewSet.as_view({
         'post': 'postAnswer'
     })),
-    path('lobby/<str:nr>/info', GameViewSet.as_view({
-        'get': 'getGameInfo'
+    path('lobby/<str:nr>/state', GameViewSet.as_view({
+        'get': 'getGameState'
     })),
     path('songs', SongsViewSet.as_view({
         'get': 'songsPage',

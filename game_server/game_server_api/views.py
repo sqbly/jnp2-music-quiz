@@ -41,6 +41,11 @@ class GameViewSet(viewsets.ViewSet):
     def startGame(self, request, pk=None):
         game = Game.objects.get(id=pk)
 
+        player_id = request.data['player_id']
+
+        if not Player.objects.filter(player_id=player_id, game_id=game).exists():
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
         game.game_started = True
 
         game.save()
@@ -60,7 +65,7 @@ class GameViewSet(viewsets.ViewSet):
             players_data = [PlayerSerializer(
                 p).data for p in players]
 
-            return Response(players_data, status=status.HTTP_200_OK)
+            return Response({'game_state': 'waiting_for_players', 'players': players_data}, status=status.HTTP_200_OK)
 
         if (datetime.now(timezone.utc) - game.round_start).total_seconds() > 25:
             game.round_no = game.round_no+1
@@ -82,7 +87,7 @@ class GameViewSet(viewsets.ViewSet):
             players_data = [PlayerScoreSerializer(
                 p).data for p in players]
 
-            return Response(players_data, status=status.HTTP_200_OK)
+            return Response({'game_state': 'game_ended',  'players': players_data}, status=status.HTTP_200_OK)
 
         print("ROUND NO")
         print(game.round_no)
@@ -94,10 +99,10 @@ class GameViewSet(viewsets.ViewSet):
             players_data = [PlayerSerializer(
                 p).data for p in players]
 
-            return Response(players_data, status=status.HTTP_200_OK)
+            return Response({'game_state': 'round_ended', 'players': players_data}, status=status.HTTP_200_OK)
         else:
             song = Song.objects.get(game_id=game, round_no=game.round_no)
-            return Response(song.url, status=status.HTTP_200_OK)
+            return Response({'game_state': 'guessing_time', 'url': song.url, 'round': game.round_no}, status=status.HTTP_200_OK)
 
     def receiveAnswer(self, request, pk=None):
         game = Game.objects.get(id=pk)
@@ -111,7 +116,8 @@ class GameViewSet(viewsets.ViewSet):
         answer_source = request.data['source'].strip().lower()
         player_id = request.data['player_id']
 
-        player = Player.objects.get(player_id=player_id, game_id=game)
+        player = Player.objects.get(
+            player_id=player_id, game_id=game)  # will throw 500 welp
 
         if player.round_no >= answer_round or game.round_no > answer_round:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
