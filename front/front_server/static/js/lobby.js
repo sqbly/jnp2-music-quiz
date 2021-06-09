@@ -168,7 +168,7 @@ function refreshContent() {
 
         previousState = gameState.game_state;
 
-        window.setTimeout(refreshContent, 200);
+        window.setTimeout(refreshContent, 500);
     }
     request.open('GET', '/lobby/' + lobbyId + '/state');
     request.send();
@@ -177,5 +177,5 @@ function refreshContent() {
 
 window.onload = () => {
     gameArea = document.getElementById('GameArea');
-    window.setTimeout(refreshContent, 200);
+    refreshContent();
 }
