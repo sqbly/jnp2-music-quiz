@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-+pw-cc-^c8%4kul1xw$n9#lf-cpjzf9aq)ylr1q6s4y&@&im2('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['host.docker.internal', 'localhost']
+ALLOWED_HOSTS = ['host.docker.internal', 'localhost', '10.64.0.130']
 
 
 # Application definition
@@ -80,8 +80,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'songs',
         'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'db',
+        'PASSWORD': 'LOX6WomDj2',
+        'HOST': '10.64.7.23',
         'PORT': '3306',
     }
 }

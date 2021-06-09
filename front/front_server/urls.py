@@ -27,9 +27,6 @@ urlpatterns = [
     path('lobby/<str:nr>', GameViewSet.as_view({
         'get': 'lobbyPage'
     })),
-    path('lobby/<str:nr>/join', GameViewSet.as_view({
-        'get': 'joinLobby'
-    })),
     path('lobby/<str:nr>/start', GameViewSet.as_view({
         'post': 'startLobby'
     })),
@@ -41,7 +38,9 @@ urlpatterns = [
     })),
     path('songs', SongsViewSet.as_view({
         'get': 'songsPage',
-        'post': 'uploadSong',
-        'delete': 'deleteSong'
+        'post': 'uploadSong'
+    })),
+    path('songs/delete/<str:id>', SongsViewSet.as_view({
+        'post': 'deleteSong'
     }))
 ]

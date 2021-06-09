@@ -5,9 +5,26 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.http import HttpResponse
 import requests
-from .forms import LoginForm, RegistrationForm, LobbyCreationForm
+from .forms import LoginForm, RegistrationForm, LobbyCreationForm, SongCreationForm
 
 # Create your views here.
+
+
+def getUsernameFromId(id):
+    url = 'http://10.64.12.205:8001/api/users/' + str(id)
+
+    data = {}
+
+    userRequest = requests.get(url, data=data)
+
+    username = userRequest.content.decode('utf-8')
+
+    print(username)
+
+    if userRequest.status_code == 200:
+        return username
+
+    return str(id)
 
 
 class LoginLogoutViewSet(viewsets.ViewSet):
@@ -17,7 +34,7 @@ class LoginLogoutViewSet(viewsets.ViewSet):
         if not form.is_valid():
             return HttpResponseBadRequest()
 
-        url = 'http://host.docker.internal:8001/api/users/login'
+        url = 'http://10.64.12.205:8001/api/users/login'
 
         data = {'username': form.cleaned_data['login'],
                 'password': form.cleaned_data['password']}
@@ -58,7 +75,7 @@ class LoginLogoutViewSet(viewsets.ViewSet):
         if not form.is_valid():
             return HttpResponseBadRequest()
 
-        url = 'http://host.docker.internal:8001/api/users'
+        url = 'http://10.64.12.205:8001/api/users'
 
         data = {'username': form.cleaned_data['login'],
                 'password': form.cleaned_data['password']}
@@ -108,7 +125,7 @@ class GameViewSet(viewsets.ViewSet):
         if not form.is_valid():
             return HttpResponseBadRequest()
 
-        url = 'http://host.docker.internal:8002/api/game_server'
+        url = 'http://10.64.7.92:8002/api/game_server'
 
         data = {'title_weight': form.cleaned_data['titleWeight'],
                 'author_weight': form.cleaned_data['authorWeight'],
@@ -130,7 +147,7 @@ class GameViewSet(viewsets.ViewSet):
         if 'player_id' not in request.session:
             return redirect('/login')
 
-        url = 'http://host.docker.internal:8002/api/game_server/start/' + \
+        url = 'http://10.64.7.92:8002/api/game_server/start/' + \
             str(nr)
 
         data = {'player_id': request.session['player_id']}
@@ -143,31 +160,38 @@ class GameViewSet(viewsets.ViewSet):
         if 'player_id' not in request.session:
             return redirect('/login')
 
-        template = loader.get_template('front_server/lobby.html')
-        context = {'lobbyId': nr}
-        return HttpResponse(template.render(context, request))
-
-    def joinLobby(self, request, nr=None):
-        if 'player_id' not in request.session:
-            return redirect('/login')
-
-        url = 'http://host.docker.internal:8002/api/game_server/join/' + \
+        url = 'http://10.64.7.92:8002/api/game_server/join/' + \
             str(nr)
 
         data = {'player_id': request.session['player_id']}
 
-        joinLobbyRequest = requests.post(url, data=data)
+        requests.post(url, data=data)
 
-        if joinLobbyRequest.status_code == 200:
-            return redirect('/lobby/' + str(nr))
+        template = loader.get_template('front_server/lobby.html')
+        context = {'lobbyId': nr}
+        return HttpResponse(template.render(context, request))
 
-        return redirect('')
+    # def joinLobby(self, request, nr=None):
+    #     if 'player_id' not in request.session:
+    #         return redirect('/login')
+
+    #     url = 'http://10.64.7.92:8002/api/game_server/join/' + \
+    #         str(nr)
+
+    #     data = {'player_id': request.session['player_id']}
+
+    #     joinLobbyRequest = requests.post(url, data=data)
+
+    #     if joinLobbyRequest.status_code == 200:
+    #         return redirect('/lobby/' + str(nr))
+
+    #     return redirect('')
 
     def getGameState(self, request, nr=None):
         if 'player_id' not in request.session:
             return redirect('/login')
 
-        url = 'http://host.docker.internal:8002/api/game_server/' + str(nr)
+        url = 'http://10.64.7.92:8002/api/game_server/' + str(nr)
 
         data = {}
 
@@ -175,19 +199,30 @@ class GameViewSet(viewsets.ViewSet):
 
         print(gameStateRequest.json())
 
-        return Response(status=gameStateRequest.status_code, data=gameStateRequest.json())
+        json = gameStateRequest.json()
+        if 'players' in json:
+            for player in json['players']:
+                player['player_id'] = getUsernameFromId(player['player_id'])
+
+        print(json)
+
+        return Response(status=gameStateRequest.status_code, data=json)
 
     def postAnswer(self, request, nr=None):
         if 'player_id' not in request.session:
             return redirect('/login')
 
-        url = 'http://host.docker.internal:8002/api/game_server/' + str(nr)
+        print(request.data)
+
+        url = 'http://10.64.7.92:8002/api/game_server/' + str(nr)
 
         data = {'player_id': request.session['player_id'],
                 'round': request.data['round'],
                 'title': request.data['title'],
                 'author': request.data['author'],
                 'source': request.data['source']}
+
+        print(data)
 
         answerRequest = requests.post(url, data=data)
 
@@ -197,10 +232,75 @@ class GameViewSet(viewsets.ViewSet):
 class SongsViewSet(viewsets.ViewSet):
 
     def songsPage(self, request):
-        pass
+        if 'player_id' not in request.session:
+            return redirect('/login')
+
+        url = 'http://10.64.0.130:8000/api/songs'
+
+        data = {}
+
+        songListRequest = requests.get(url, data=data)
+
+        songsListJson = songListRequest.json
+
+        template = loader.get_template('front_server/song_creation_page.html')
+        context = {
+            'form': SongCreationForm(),
+            'songs': songsListJson
+        }
+        return HttpResponse(template.render(context, request))
 
     def uploadSong(self, request):
-        pass
 
-    def deleteSong(self, request):
-        pass
+        print('Uploading song')
+        if 'player_id' not in request.session:
+            return redirect('/login')
+
+        form = SongCreationForm(request.POST)
+
+        if not form.is_valid():
+            # return HttpResponseBadRequest()
+            template = loader.get_template(
+                'front_server/song_creation_page.html')
+            context = {'form': SongCreationForm(), 'failed': True}
+            return HttpResponse(template.render(context, request))
+
+        print('Song valid')
+        # url title author source start_point length
+
+        url = 'http://10.64.0.130:8000/api/songs'
+
+        data = {'url': form.cleaned_data['url'],
+                'title': form.cleaned_data['title'],
+                'author': form.cleaned_data['author'],
+                'source': form.cleaned_data['source'],
+                'start_point': form.cleaned_data['start_point'],
+                'length': form.cleaned_data['length']}
+
+        songCreationRequest = requests.post(url, data=data)
+
+        if songCreationRequest.status_code == 201:  # HTTP_201_CREATED
+            return redirect('/')
+
+        template = loader.get_template(
+            'front_server/song_creation_page.html')
+        context = {'form': SongCreationForm(), 'failed': True}
+        return HttpResponse(template.render(context, request))
+
+    def deleteSong(self, request, id=None):
+        if 'player_id' not in request.session:
+            return redirect('/login')
+
+        url = 'http://10.64.0.130:8000/api/songs/' + str(id)
+
+        data = {}
+
+        songDeletionRequest = requests.delete(url, data=data)
+
+        if songDeletionRequest.status_code == 204:  # HTTP_204_NO_CONTENT means ok
+            return redirect('/songs')
+
+        template = loader.get_template(
+            'front_server/song_creation_page.html')
+        context = {'form': SongCreationForm(), 'failed': True}
+        return HttpResponse(template.render(context, request))

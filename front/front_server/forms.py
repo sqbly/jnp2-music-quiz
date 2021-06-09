@@ -47,3 +47,23 @@ class LobbyCreationForm(forms.Form):
             self.add_error('titleWeight', 'Weights do not sum up to 1')
 
         return cleaned_data
+
+
+class SongCreationForm(forms.Form):
+    url = forms.URLField(label='URL', required=True)
+    title = forms.CharField(label='Title', max_length=64, required=True)
+    author = forms.CharField(label='Author', max_length=64, required=True)
+    source = forms.CharField(label='Source', max_length=64, required=True)
+    start_point = forms.IntegerField(
+        label='Start point', min_value=0, initial=0)
+    length = forms.IntegerField(label='End point', min_value=20, initial=60)
+
+    def clean(self):
+        cleaned_data = super(SongCreationForm, self).clean()
+        start_point = cleaned_data.get('start_point')
+        length = cleaned_data.get('length')
+
+        if start_point + 20 > length:
+            self.add_error('length', 'Length too small')
+
+        return cleaned_data

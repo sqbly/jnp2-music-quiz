@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from django.db.models.constraints import UniqueConstraint
 
 from django.db.models.deletion import CASCADE
 
@@ -74,6 +75,15 @@ class Player(models.Model):
         max_length=128,
         default=''
     )
+    correct_title = models.BooleanField(
+        default=False
+    )
+    correct_author = models.BooleanField(
+        default=False
+    )
+    correct_source = models.BooleanField(
+        default=False
+    )
     game_id = models.ForeignKey(
         Game,
         on_delete=CASCADE
@@ -81,3 +91,9 @@ class Player(models.Model):
     round_no = models.IntegerField(
         default=0
     )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['player_id', 'game_id'],
+                             name='player_once_in_game')
+        ]

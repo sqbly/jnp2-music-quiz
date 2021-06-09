@@ -18,5 +18,11 @@ class Song(models.Model):
     source = models.CharField(
         max_length=128
     )
+    start_point = models.IntegerField(
+        default=0
+    )
+    length = models.PositiveIntegerField(
+        default=90
+    )
 
     UniqueConstraint(fields=['title', 'author', 'source'], name='unique_songs')

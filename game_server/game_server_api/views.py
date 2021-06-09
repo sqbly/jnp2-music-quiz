@@ -18,7 +18,7 @@ class GameViewSet(viewsets.ViewSet):
 
         for i in range(10):
             songRequest = requests.get(
-                'http://host.docker.internal:8000/api/songs/random')
+                'http://10.64.0.130:8000/api/songs/random')
 
             song_serializer = SongSerializer(data=songRequest.json())
             song_serializer.is_valid(raise_exception=True)
@@ -99,10 +99,10 @@ class GameViewSet(viewsets.ViewSet):
             players_data = [PlayerSerializer(
                 p).data for p in players]
 
-            return Response({'game_state': 'round_ended', 'players': players_data}, status=status.HTTP_200_OK)
+            return Response({'round': game.round_no, 'game_state': 'round_ended', 'players': players_data}, status=status.HTTP_200_OK)
         else:
             song = Song.objects.get(game_id=game, round_no=game.round_no)
-            return Response({'game_state': 'guessing_time', 'url': song.url, 'round': game.round_no}, status=status.HTTP_200_OK)
+            return Response({'round': game.round_no, 'game_state': 'guessing_time', 'url': song.url, 'round': game.round_no}, status=status.HTTP_200_OK)
 
     def receiveAnswer(self, request, pk=None):
         game = Game.objects.get(id=pk)
@@ -110,7 +110,7 @@ class GameViewSet(viewsets.ViewSet):
         if game.round_ended:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        answer_round = request.data['round']
+        answer_round = int(request.data['round'])
         answer_title = request.data['title'].strip().lower()
         answer_author = request.data['author'].strip().lower()
         answer_source = request.data['source'].strip().lower()
@@ -126,12 +126,21 @@ class GameViewSet(viewsets.ViewSet):
 
         if answer_title == song.title.strip().lower():
             player.score = player.score + game.title_weight
+            player.correct_title = True
+        else:
+            player.correct_title = False
 
         if answer_author == song.author.strip().lower():
             player.score = player.score + game.author_weight
+            player.correct_author = True
+        else:
+            player.correct_author = False
 
         if answer_source == song.source.strip().lower():
             player.score = player.score + game.source_weight
+            player.correct_source = True
+        else:
+            player.correct_source = False
 
         print(player.score)
 

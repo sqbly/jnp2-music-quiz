@@ -12,7 +12,8 @@ class SongSerializer(serializers.ModelSerializer):
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ['player_id', 'last_title', 'last_author', 'last_source']
+        fields = ['player_id', 'last_title', 'last_author', 'last_source',
+                  'correct_title', 'correct_author', 'correct_source', 'round_no']
 
 
 class PlayerScoreSerializer(serializers.ModelSerializer):
