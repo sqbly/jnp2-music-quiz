@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Music quiz </title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    {% load static %}
+    <link rel='stylesheet' type='text/css' media='screen' href='{% static "css/style.css" %}'>
+    <script src='{% static "js/stats.js" %}'></script>
+</head>
+
+<body>
+    Games played: {{games_played}}
+    <br>
+    Total points earned: {{points}}
+    <br>
+    Average points in one game: {{average}}
+
+    <a href='/'> Go back </div>
+</body>
+
+</html>

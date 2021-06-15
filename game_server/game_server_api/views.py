@@ -5,7 +5,9 @@ from rest_framework.response import Response
 import requests
 from datetime import datetime, timezone
 from .models import Game, Song, Player
+import celery
 
+ROUNDS_IN_GAME = 4
 
 # Create your views here.
 
@@ -16,7 +18,7 @@ class GameViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         game = serializer.save()
 
-        for i in range(10):
+        for i in range(ROUNDS_IN_GAME):
             songRequest = requests.get(
                 'http://10.64.0.130:8000/api/songs/random')
 
@@ -77,7 +79,12 @@ class GameViewSet(viewsets.ViewSet):
 
         game.save()
 
-        if game.round_no > 10:
+        if game.round_no > ROUNDS_IN_GAME:
+            if (not game.game_ended):
+                players = list(Player.objects.filter(game_id=game))
+                for player in players:
+                    celery.current_app.send_task('stats_api.tasks.consume', [{
+                                                 'player_id': player.player_id, 'score': player.score, 'game_id': game.id}])
             game.game_ended = True
             game.save()
 

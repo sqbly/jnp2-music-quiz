@@ -104,7 +104,29 @@ class HomeViewSet(viewsets.ViewSet):
         return HttpResponse(template.render(context, request))
 
     def statsPage(self, request):
-        return redirect('/')
+        if 'player_id' not in request.session:
+            return redirect('/login')
+
+        url = 'http://10.64.8.192:8004/api/user/' + \
+            str(request.session['player_id'])
+
+        data = {}
+
+        userRequest = requests.get(url, data=data)
+        if (userRequest.status_code == 200):
+            requestData = userRequest.json()
+
+            template = loader.get_template('front_server/stats.html')
+            context = {'games_played': requestData['game_id__count'],
+                       'points': requestData['score__sum'],
+                       'average': requestData['score__sum'] / requestData['game_id__count']}
+            return HttpResponse(template.render(context, request))
+        else:
+            template = loader.get_template('front_server/stats.html')
+            context = {'games_played': 0,
+                       'points': 0,
+                       'average': 0}
+            return HttpResponse(template.render(context, request))
 
 
 class GameViewSet(viewsets.ViewSet):
