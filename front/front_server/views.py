@@ -116,10 +116,14 @@ class HomeViewSet(viewsets.ViewSet):
         if (userRequest.status_code == 200):
             requestData = userRequest.json()
 
+            avg = 0
+            if requestData['game_id__count'] != 0:
+                avg = requestData['score__sum'] / requestData['game_id__count']
+
             template = loader.get_template('front_server/stats.html')
             context = {'games_played': requestData['game_id__count'],
                        'points': requestData['score__sum'],
-                       'average': requestData['score__sum'] / requestData['game_id__count']}
+                       'average': avg}
             return HttpResponse(template.render(context, request))
         else:
             template = loader.get_template('front_server/stats.html')
